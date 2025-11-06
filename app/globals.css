@@ -1,26 +1,440 @@
-@import "tailwindcss";
+/* app/globals.css */
 
+/* 1. DEFINE COLOR VARIABLES */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --dark-bg: #000010;
+  --panel-bg: rgba(10, 20, 40, 0.85);
+  --border-color: #445;
+  --text-color: #fff;
+  --text-color-dim: #ccc;
+  --text-color-label: #999;
+  --search-bg: #223;
+  --hover-bg: rgba(255, 255, 255, 0.1);
+  --btn-bg: #223;
+  --btn-border: #556;
+  --btn-active-bg: #4a67e8;
+  --btn-active-border: #4a67e8;
+  --globe-label-bg: rgba(50, 50, 50, 0.8);
+  --globe-label-border: #777;
+  --tooltip-bg: rgba(20, 30, 50, 0.9);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* 2. DEFINE LIGHT THEME OVERRIDES */
+[data-theme="light"] {
+  --dark-bg: #f0f4f8;
+  --panel-bg: rgba(255, 255, 255, 0.85);
+  --border-color: #d0d5dd;
+  --text-color: #111;
+  --text-color-dim: #333;
+  --text-color-label: #555;
+  --search-bg: #fff;
+  --hover-bg: rgba(0, 0, 0, 0.05);
+  --btn-bg: #fff;
+  --btn-border: #ccc;
+  --btn-active-bg: #3b5fe6;
+  --btn-active-border: #3b5fe6;
+  --globe-label-bg: rgba(255, 255, 255, 0.8);
+  --globe-label-border: #aaa;
+  --tooltip-bg: rgba(255, 255, 255, 0.9);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* 3. APPLY VARIABLES */
+html,
+body {
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--dark-bg);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+main {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* --- Globe Tooltip --- */
+.globe-label {
+  background-color: var(--globe-label-bg);
+  border: 1px solid var(--globe-label-border);
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 14px;
+  color: var(--text-color);
+  pointer-events: none;
+}
+.globe-label b {
+  color: var(--text-color);
+}
+.globe-label span {
+  color: var(--text-color-dim);
+  font-size: 12px;
+}
+
+/* --- Panel Base --- */
+.panel {
+  position: absolute;
+  z-index: 10;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+}
+.panel-header h3 {
+  margin: 0;
+}
+.panel-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-color-dim);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 5px;
+}
+.panel-content {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: 400px;
+}
+.panel-content.collapsed {
+  display: none;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 15px 0;
+}
+
+/* --- Control Panel --- */
+.control-panel {
+  top: 20px;
+  left: 20px;
+  width: 320px;
+}
+
+.search-box {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--search-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.filter-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+.filter-label:hover {
+  background-color: var(--hover-bg);
+}
+.filter-label input {
+  margin-right: 8px;
+}
+.filter-label .icon {
+  margin-right: 5px;
+}
+
+.select-group {
+  margin-bottom: 10px;
+}
+.select-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: var(--text-color-label);
+}
+.select-group select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--search-bg);
+  color: var(--text-color);
+}
+.select-group select:disabled {
+  opacity: 0.5;
+}
+
+/* --- Historical Chart Panel --- */
+.chart-container {
+  bottom: 20px;
+  left: 20px;
+  width: 450px;
+  height: 300px;
+}
+.chart-container .panel-content {
+  height: calc(100% - 45px); /* Full height minus header */
+  padding: 10px;
+  padding-top: 16px;
+}
+.chart-container-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-color-label);
+}
+
+.chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  padding: 0 10px;
+}
+.time-range-selector button {
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-border);
+  color: var(--text-color-dim);
+  padding: 4px 8px;
+  margin-left: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.time-range-selector button.active {
+  background: var(--btn-active-bg);
+  color: #fff;
+  border-color: var(--btn-active-border);
+}
+
+.stats-display {
+  display: flex;
+  gap: 15px;
+  font-size: 12px;
+  color: var(--text-color-label);
+}
+.stats-display span {
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+/* Recharts Tooltip */
+.custom-tooltip {
+  background-color: var(--tooltip-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 10px;
+  color: var(--text-color);
+  font-size: 12px;
+}
+
+/* --- Theme Toggle Button --- */
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  background: var(--search-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-color-dim);
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+.theme-toggle-btn:hover {
+  background-color: var(--hover-bg);
+}
+.theme-toggle-label {
+  margin-left: 10px;
+}
+
+/* --- Performance Dashboard --- */
+.performance-dashboard {
+  top: 20px;
+  right: 20px;
+  width: 250px;
+  padding: 12px 16px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.perf-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.perf-label {
+  color: var(--text-color-label);
+  font-size: 12px;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-icon {
+  animation: spin 2s linear infinite;
+  color: var(--text-color-label);
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+  .control-panel {
+    width: calc(100% - 40px);
+    max-height: 45vh;
+  }
+  .chart-container {
+    width: calc(100% - 40px);
+    bottom: 20px;
+    top: auto;
+    left: 20px;
+    height: 280px;
+    max-height: 40vh;
+  }
+  .performance-dashboard {
+    display: none; /* Hide perf dashboard on mobile */
+  }
+}
+.legend-panel {
+  bottom: 20px;
+  right: 20px;
+  width: 250px;
+  padding: 12px 16px;
+}
+.legend-panel h4 {
+  margin: 0 0 10px 0;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+.legend-items {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+.legend-icon {
+  margin-right: 8px;
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* --- Polygon Toggle (in Control Panel) --- */
+.toggle-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+.toggle-group:hover {
+  background-color: var(--hover-bg);
+}
+.toggle-group label {
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--btn-border);
+  transition: 0.4s;
+  border-radius: 22px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+input:checked + .toggle-slider {
+  background-color: var(--btn-active-bg);
+}
+input:checked + .toggle-slider:before {
+  transform: translateX(18px);
+}
+
+/* --- Responsive Design Updates --- */
+@media (max-width: 768px) {
+  /* ... (existing responsive styles) ... */
+
+  .performance-dashboard {
+    display: none;
+  }
+  .legend-panel {
+    display: none; /* Also hide legend on mobile for space */
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Update perf dashboard position on desktop */
+@media (min-width: 769px) {
+  .performance-dashboard {
+    top: 90px; /* Move down to make space for Legend */
+    right: 20px;
+  }
+  .legend-panel {
+    top: 20px; /* Legend at top right */
+    right: 20px;
+    bottom: auto; /* Override default bottom */
+  }
 }

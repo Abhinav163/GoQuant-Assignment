@@ -1,65 +1,156 @@
-import Image from "next/image";
+// app/page.tsx
+'use client';
+import React, { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
+
+// Import Data & Types
+import { exchanges as allExchanges } from '@/data/exchange-locations';
+import { cloudRegions as allCloudRegions } from '@/data/cloud-regions';
+import { regionPolygons as allRegionPolygons } from '@/data/region-polygons'; // Import new data
+import { LocationPoint, ArcData, Provider, HistoricalDataPoint, TimeRange, LatencyStats, PolygonFeature } from '@/types'; // Import PolygonFeature
+
+// Import Simulator
+import { getMockLatency, getMockHistoricalData, calculateStats } from '@/utils/latency-simulator';
+
+// Import UI Components
+import ControlPanel from '@/components/ControlPanel';
+import HistoricalChart from '@/components/HistoricalChart';
+import PerformanceDashboard from '@/components/PerformanceDashboard';
+import Legend from '@/components/Legend'; // Import new component
+
+const LatencyGlobe = dynamic(() => import('@/components/LatencyGlobe'), {
+  ssr: false,
+  loading: () => <p style={{ textAlign: 'center', marginTop: '20%' }}>Loading 3D Globe...</p>,
+});
 
 export default function Home() {
+  // --- State ---
+  const [latencyArcs, setLatencyArcs] = useState<ArcData[]>([]);
+  const [points, setPoints] = useState<LocationPoint[]>([]);
+  const [historicalData, setHistoricalData] = useState<HistoricalDataPoint[]>([]);
+  const [historicalStats, setHistoricalStats] = useState<LatencyStats>({ min: 0, max: 0, avg: 0 });
+  const [timeRange, setTimeRange] = useState<TimeRange>('24h');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [lastUpdateTime, setLastUpdateTime] = useState<string | null>(null);
+  
+  const [filters, setFilters] = useState<Record<Provider, boolean>>({
+    aws: true, gcp: true, azure: true, colo: true,
+  });
+  
+  const [selectedPair, setSelectedPair] = useState<{ from: string | null; to: string | null }>({
+    from: null, to: null,
+  });
+
+  // --- New State ---
+  const [showRegionBoundaries, setShowRegionBoundaries] = useState(true);
+
+  // --- Memos for Filtering ---
+  const visibleRegions = useMemo(() => {
+    return allCloudRegions.filter(r => 
+      filters[r.provider] && r.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [filters, searchTerm]);
+
+  const visibleExchanges = useMemo(() => {
+    return allExchanges.filter(e => 
+      filters[e.provider] && e.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [filters, searchTerm]);
+
+  // --- New Memo for Polygons ---
+  const visiblePolygons = useMemo(() => {
+    if (!showRegionBoundaries) {
+      return [];
+    }
+    return allRegionPolygons.filter(p =>
+      filters[p.properties.provider] &&
+      p.properties.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [filters, searchTerm, showRegionBoundaries]);
+
+  // --- useEffects ---
+  
+  // Real-time Latency Simulation
+  useEffect(() => {
+    const updateLatency = () => {
+      const newArcs: ArcData[] = [];
+      for (const region of visibleRegions) {
+        for (const exchange of visibleExchanges) {
+          if (region.id === exchange.id) continue;
+          const { latency, color } = getMockLatency(region.id, exchange.id);
+          newArcs.push({
+            startLat: region.lat,
+            startLng: region.lng,
+            endLat: exchange.lat,
+            endLng: exchange.lng,
+            color: color,
+            label: `${region.name} to ${exchange.name}: ${latency} ms`,
+          });
+        }
+      }
+      setLatencyArcs(newArcs);
+      setLastUpdateTime(new Date().toISOString());
+    };
+
+    updateLatency();
+    const interval = setInterval(updateLatency, 5000);
+    return () => clearInterval(interval);
+  }, [visibleRegions, visibleExchanges]);
+
+  // Update Visible Points
+  useEffect(() => {
+    // If showing boundaries, don't show the center point for regions
+    const regionPoints = showRegionBoundaries ? [] : visibleRegions;
+    setPoints([...regionPoints, ...visibleExchanges]);
+  }, [visibleRegions, visibleExchanges, showRegionBoundaries]);
+
+  // Historical Data Generation
+  useEffect(() => {
+    if (selectedPair.from && selectedPair.to) {
+      const data = getMockHistoricalData(selectedPair.from, selectedPair.to, timeRange);
+      const stats = calculateStats(data);
+      setHistoricalData(data);
+      setHistoricalStats(stats);
+    } else {
+      setHistoricalData([]);
+      setHistoricalStats({ min: 0, max: 0, avg: 0 });
+    }
+  }, [selectedPair, timeRange]);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main>
+      <div style={{ position: 'absolute', zIndex: 0, width: '100%', height: '100%' }}>
+        <LatencyGlobe
+          pointsData={points}
+          latencyArcs={latencyArcs}
+          polygonsData={visiblePolygons} // <-- Pass new prop
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+
+      <ControlPanel
+        exchanges={allExchanges}
+        cloudRegions={allCloudRegions}
+        filters={filters}
+        setFilters={setFilters}
+        selectedPair={selectedPair}
+        setSelectedPair={setSelectedPair}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        showRegionBoundaries={showRegionBoundaries} // <-- Pass new prop
+        setShowRegionBoundaries={setShowRegionBoundaries} // <-- Pass new prop
+      />
+
+      <HistoricalChart
+        data={historicalData}
+        stats={historicalStats}
+        timeRange={timeRange}
+        onTimeRangeChange={setTimeRange}
+      />
+
+      <PerformanceDashboard lastUpdateTime={lastUpdateTime} />
+
+      <Legend /> {/* <-- Add the new Legend component */}
+      
+    </main>
   );
 }
