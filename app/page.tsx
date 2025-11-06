@@ -6,22 +6,68 @@ import dynamic from 'next/dynamic';
 // Import Data & Types
 import { exchanges as allExchanges } from '@/data/exchange-locations';
 import { cloudRegions as allCloudRegions } from '@/data/cloud-regions';
-import { regionPolygons as allRegionPolygons } from '@/data/region-polygons'; // Import new data
-import { LocationPoint, ArcData, Provider, HistoricalDataPoint, TimeRange, LatencyStats, PolygonFeature } from '@/types'; // Import PolygonFeature
-
-// Import Simulator
-import { getMockLatency, getMockHistoricalData, calculateStats } from '@/utils/latency-simulator';
+import { regionPolygons as allRegionPolygons } from '@/data/region-polygons'; 
+import { LocationPoint, ArcData, Provider, HistoricalDataPoint, TimeRange, LatencyStats, PolygonFeature } from '@/types';
 
 // Import UI Components
 import ControlPanel from '@/components/ControlPanel';
 import HistoricalChart from '@/components/HistoricalChart';
 import PerformanceDashboard from '@/components/PerformanceDashboard';
-import Legend from '@/components/Legend'; // Import new component
+import Legend from '@/components/Legend';
+
+// We will use the mock historical data again, as the new API is for real-time only
+import { getMockHistoricalData, calculateStats } from '@/utils/latency-simulator';
+
 
 const LatencyGlobe = dynamic(() => import('@/components/LatencyGlobe'), {
   ssr: false,
   loading: () => <p style={{ textAlign: 'center', marginTop: '20%' }}>Loading 3D Globe...</p>,
 });
+
+// Helper function to get latency color
+const getLatencyColor = (latency: number): string => {
+  if (latency < 50) return 'rgba(0, 255, 0, 0.7)'; // Green
+  else if (latency < 150) return 'rgba(255, 255, 0, 0.7)'; // Yellow
+  else return 'rgba(255, 0, 0, 0.7)'; // Red
+};
+
+// --- NEW HELPER FUNCTIONS ---
+
+// Calculates distance between two lat/lng points in KM
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Finds the average latency of the nearest probes to a location
+function getLatencyFromProbes(location: LocationPoint, probes: any[], probeCount = 3) {
+  const sortedProbes = probes
+    .filter(p => p.status === 'ready' && p.stats.rtt > 0)
+    .map(probe => ({
+      ...probe,
+      distance: getDistance(location.lat, location.lng, probe.location.latitude, probe.location.longitude),
+    }))
+    .sort((a, b) => a.distance - b.distance);
+
+  const nearestProbes = sortedProbes.slice(0, probeCount);
+  
+  if (nearestProbes.length === 0) {
+    return 100; // Fallback latency
+  }
+
+  const avgLatency = nearestProbes.reduce((acc, p) => acc + p.stats.rtt, 0) / nearestProbes.length;
+  return avgLatency;
+}
+
+// --- END HELPER FUNCTIONS ---
+
 
 export default function Home() {
   // --- State ---
@@ -43,6 +89,9 @@ export default function Home() {
 
   // --- New State ---
   const [showRegionBoundaries, setShowRegionBoundaries] = useState(true);
+  
+  // --- NEW STATE for probes ---
+  const [probes, setProbes] = useState<any[]>([]);
 
   // --- Memos for Filtering ---
   const visibleRegions = useMemo(() => {
@@ -57,7 +106,6 @@ export default function Home() {
     );
   }, [filters, searchTerm]);
 
-  // --- New Memo for Polygons ---
   const visiblePolygons = useMemo(() => {
     if (!showRegionBoundaries) {
       return [];
@@ -69,22 +117,44 @@ export default function Home() {
   }, [filters, searchTerm, showRegionBoundaries]);
 
   // --- useEffects ---
-  
-  // Real-time Latency Simulation
+
+  // NEW: Fetch Globalping probes once on load
   useEffect(() => {
+    fetch('https://api.globalping.io/v1/probes')
+      .then(res => res.json())
+      .then(data => {
+        console.log(`Fetched ${data.length} probes`);
+        setProbes(data);
+      })
+      .catch(err => console.error("Failed to fetch Globalping probes:", err));
+  }, []);
+  
+  // MODIFIED: Real-time Latency Simulation
+  useEffect(() => {
+    // This effect now depends on 'probes'
+    if (probes.length === 0) return; // Don't run until probes are loaded
+
     const updateLatency = () => {
       const newArcs: ArcData[] = [];
       for (const region of visibleRegions) {
         for (const exchange of visibleExchanges) {
           if (region.id === exchange.id) continue;
-          const { latency, color } = getMockLatency(region.id, exchange.id);
+
+          // Get latency from nearest probes for each
+          const regionLatency = getLatencyFromProbes(region, probes);
+          const exchangeLatency = getLatencyFromProbes(exchange, probes);
+
+          // Simple average of the two locations' general latencies
+          const avgLatency = (regionLatency + exchangeLatency) / 2;
+          const color = getLatencyColor(avgLatency);
+
           newArcs.push({
             startLat: region.lat,
             startLng: region.lng,
             endLat: exchange.lat,
             endLng: exchange.lng,
             color: color,
-            label: `${region.name} to ${exchange.name}: ${latency} ms`,
+            label: `${region.name} to ${exchange.name}: ${avgLatency.toFixed(1)} ms (real-data)`,
           });
         }
       }
@@ -93,18 +163,19 @@ export default function Home() {
     };
 
     updateLatency();
-    const interval = setInterval(updateLatency, 5000);
+    // We can update this less frequently now
+    const interval = setInterval(updateLatency, 60000); 
     return () => clearInterval(interval);
-  }, [visibleRegions, visibleExchanges]);
+  }, [visibleRegions, visibleExchanges, probes]); // Re-run if probes change
 
   // Update Visible Points
   useEffect(() => {
-    // If showing boundaries, don't show the center point for regions
     const regionPoints = showRegionBoundaries ? [] : visibleRegions;
     setPoints([...regionPoints, ...visibleExchanges]);
   }, [visibleRegions, visibleExchanges, showRegionBoundaries]);
 
-  // Historical Data Generation
+  // MODIFIED: Historical Data Generation
+  // Back to MOCK data for this, as the Globalping API is real-time only.
   useEffect(() => {
     if (selectedPair.from && selectedPair.to) {
       const data = getMockHistoricalData(selectedPair.from, selectedPair.to, timeRange);
@@ -123,7 +194,7 @@ export default function Home() {
         <LatencyGlobe
           pointsData={points}
           latencyArcs={latencyArcs}
-          polygonsData={visiblePolygons} // <-- Pass new prop
+          polygonsData={visiblePolygons}
         />
       </div>
 
@@ -136,8 +207,8 @@ export default function Home() {
         setSelectedPair={setSelectedPair}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
-        showRegionBoundaries={showRegionBoundaries} // <-- Pass new prop
-        setShowRegionBoundaries={setShowRegionBoundaries} // <-- Pass new prop
+        showRegionBoundaries={showRegionBoundaries}
+        setShowRegionBoundaries={setShowRegionBoundaries}
       />
 
       <HistoricalChart
@@ -149,7 +220,7 @@ export default function Home() {
 
       <PerformanceDashboard lastUpdateTime={lastUpdateTime} />
 
-      <Legend /> {/* <-- Add the new Legend component */}
+      <Legend />
       
     </main>
   );

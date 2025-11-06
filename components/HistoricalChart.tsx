@@ -56,7 +56,8 @@ const HistoricalChart: React.FC<ChartProps> = ({
       <div className={`panel-content ${isCollapsed ? 'collapsed' : ''}`}>
         {!data || data.length === 0 ? (
           <div className="chart-container-empty">
-            <p>Select a Region and Exchange to view historical data.</p>
+            {/* --- THIS TEXT IS UPDATED --- */}
+            <p>Select a Region and Exchange to view historical data. (No data available for this selection.)</p>
           </div>
         ) : (
           <>

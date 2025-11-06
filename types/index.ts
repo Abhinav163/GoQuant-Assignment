@@ -9,6 +9,7 @@ export interface LocationPoint {
   location?: string;
   lat: number;
   lng: number;
+  // countryCode?: string;
 }
 
 export interface ArcData {
