@@ -3,13 +3,14 @@
 
 import React from 'react';
 import Globe from 'react-globe.gl'; 
-import { LocationPoint, ArcData, Provider, PolygonFeature } from '@/types'; // Import PolygonFeature
+import { LocationPoint, ArcData, Provider, PolygonFeature } from '@/types';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface GlobeProps {
   pointsData: LocationPoint[];
   latencyArcs: ArcData[];
-  polygonsData: PolygonFeature[]; // <-- New Prop
+  polygonsData: PolygonFeature[];
+  heatmapData: { lat: number, lng: number, val: number }[];
 }
 
 // Helper function for colors, now with opacity
@@ -23,7 +24,7 @@ const getProviderColor = (provider: Provider, opacity: number = 1): string => {
   }
 };
 
-const LatencyGlobe: React.FC<GlobeProps> = ({ pointsData, latencyArcs, polygonsData }) => {
+const LatencyGlobe: React.FC<GlobeProps> = ({ pointsData, latencyArcs, polygonsData, heatmapData }) => {
   const { theme } = useTheme();
 
   const globeImageUrl = theme === 'dark'
@@ -60,7 +61,7 @@ const LatencyGlobe: React.FC<GlobeProps> = ({ pointsData, latencyArcs, polygonsD
       arcDashGap={1}
       arcDashAnimateTime={3000}
 
-      // --- Polygons (New) ---
+      // --- Polygons ---
       polygonsData={polygonsData}
       polygonGeoJsonGeometry="geometry"
       polygonCapColor={(feat) => getProviderColor((feat as PolygonFeature).properties.provider, 0.2)}
@@ -71,6 +72,12 @@ const LatencyGlobe: React.FC<GlobeProps> = ({ pointsData, latencyArcs, polygonsD
           <b>${properties.name}</b>
         </div>
       `}
+      
+      heatmapsData={[heatmapData]}
+      heatmapPointLat="lat"
+      heatmapPointLng="lng"
+      heatmapPointVal="val"
+      heatmapRadius={20}
     />
   );
 };

@@ -26,7 +26,7 @@ export interface HistoricalDataPoint {
   latency: number;
 }
 
-export type TimeRange = '1h' | '24h' | '7d';
+export type TimeRange = '1h' | '24h' | '7d' | '30d';
 
 export interface LatencyStats {
   min: number;

@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from 'recharts';
 import { HistoricalDataPoint, LatencyStats, TimeRange } from '@/types';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaFileCsv } from 'react-icons/fa';
 
 interface ChartProps {
   data: HistoricalDataPoint[];
@@ -44,6 +44,26 @@ const HistoricalChart: React.FC<ChartProps> = ({
   const yMin = Math.floor(stats.min * 0.9);
   const yMax = Math.ceil(stats.max * 1.1);
 
+  const handleExportCSV = () => {
+    if (!data || data.length === 0) return;
+
+    const headers = "time,latency\n";
+    const rows = data.map(d => `${d.time},${d.latency}`).join("\n");
+    const csvContent = headers + rows;
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.href) {
+      URL.revokeObjectURL(link.href);
+    }
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute("download", `latency-data-${timeRange}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="panel chart-container">
       <div className="panel-header" onClick={() => setIsCollapsed(!isCollapsed)}>
@@ -56,14 +76,13 @@ const HistoricalChart: React.FC<ChartProps> = ({
       <div className={`panel-content ${isCollapsed ? 'collapsed' : ''}`}>
         {!data || data.length === 0 ? (
           <div className="chart-container-empty">
-            {/* --- THIS TEXT IS UPDATED --- */}
             <p>Select a Region and Exchange to view historical data. (No data available for this selection.)</p>
           </div>
         ) : (
           <>
             <div className="chart-controls">
               <div className="time-range-selector">
-                {(['1h', '24h', '7d'] as TimeRange[]).map((range) => (
+                {(['1h', '24h', '7d', '30d'] as TimeRange[]).map((range) => (
                   <button
                     key={range}
                     className={timeRange === range ? 'active' : ''}
@@ -78,9 +97,14 @@ const HistoricalChart: React.FC<ChartProps> = ({
                 Max: <span>{stats.max}</span>
                 Avg: <span>{stats.avg}</span>
               </div>
+              <button className="export-btn" onClick={handleExportCSV} title="Export as CSV">
+                <FaFileCsv />
+              </button>
             </div>
 
-            <ResponsiveContainer width="100%" height="calc(100% - 40px)">
+            {/* --- THIS IS THE FIX --- */}
+            {/* The container is 300px, header is 45px, controls are ~40px. Let's give it a fixed height. */}
+            <ResponsiveContainer width="100%" height={200}>
               <LineChart
                 data={data}
                 margin={{ top: 5, right: 20, left: 0, bottom: 5 }}

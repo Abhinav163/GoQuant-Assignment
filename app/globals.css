@@ -438,3 +438,28 @@ input:checked + .toggle-slider:before {
     bottom: auto; /* Override default bottom */
   }
 }
+
+.export-btn {
+  background: none;
+  border: 1px solid var(--btn-border);
+  color: var(--text-color-dim);
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 10px; /* Give it some space */
+}
+.export-btn:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+}
+
+/* Update chart-controls to accommodate new button */
+.chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Use center for better alignment with new button */
+  margin-bottom: 10px;
+  padding: 0 10px;
+}

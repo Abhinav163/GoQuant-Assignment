@@ -45,6 +45,10 @@ export const getMockHistoricalData = (
       totalMinutes = 7 * 24 * 60;
       stepMinutes = 60; // 168 points
       break;
+    case '30d': // <-- NEW CASE
+      totalMinutes = 30 * 24 * 60;
+      stepMinutes = 240; // 4-hour intervals, 180 points
+      break;
     case '24h':
     default:
       totalMinutes = 24 * 60;

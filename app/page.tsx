@@ -15,7 +15,7 @@ import HistoricalChart from '@/components/HistoricalChart';
 import PerformanceDashboard from '@/components/PerformanceDashboard';
 import Legend from '@/components/Legend';
 
-// We will use the mock historical data again, as the new API is for real-time only
+// We will use the mock historical data again
 import { getMockHistoricalData, calculateStats } from '@/utils/latency-simulator';
 
 
@@ -31,7 +31,7 @@ const getLatencyColor = (latency: number): string => {
   else return 'rgba(255, 0, 0, 0.7)'; // Red
 };
 
-// --- NEW HELPER FUNCTIONS ---
+// --- HELPER FUNCTIONS ---
 
 // Calculates distance between two lat/lng points in KM
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -66,8 +66,6 @@ function getLatencyFromProbes(location: LocationPoint, probes: any[], probeCount
   return avgLatency;
 }
 
-// --- END HELPER FUNCTIONS ---
-
 
 export default function Home() {
   // --- State ---
@@ -89,8 +87,7 @@ export default function Home() {
 
   // --- New State ---
   const [showRegionBoundaries, setShowRegionBoundaries] = useState(true);
-  
-  // --- NEW STATE for probes ---
+  const [showHeatmap, setShowHeatmap] = useState(true);
   const [probes, setProbes] = useState<any[]>([]);
 
   // --- Memos for Filtering ---
@@ -116,9 +113,25 @@ export default function Home() {
     );
   }, [filters, searchTerm, showRegionBoundaries]);
 
+  // --- HEATMAP MEMO ---
+  const visibleHeatmapData = useMemo(() => {
+    if (!showHeatmap || probes.length === 0) {
+      return [];
+    }
+    // Create heatmap points from all available probes
+    return probes
+      .filter(p => p.status === 'ready' && p.stats.rtt > 0)
+      .map(p => ({
+        lat: p.location.latitude,
+        lng: p.location.longitude,
+        val: p.stats.rtt / 100, // <-- UPDATED: Normalize RTT (e.g., 100ms = 1.0 weight)
+      }));
+  }, [probes, showHeatmap]);
+  // ----------------------------
+
   // --- useEffects ---
 
-  // NEW: Fetch Globalping probes once on load
+  // Fetch Globalping probes once on load
   useEffect(() => {
     fetch('https://api.globalping.io/v1/probes')
       .then(res => res.json())
@@ -129,22 +142,19 @@ export default function Home() {
       .catch(err => console.error("Failed to fetch Globalping probes:", err));
   }, []);
   
-  // MODIFIED: Real-time Latency Simulation
+  // Real-time Latency Simulation
   useEffect(() => {
-    // This effect now depends on 'probes'
-    if (probes.length === 0) return; // Don't run until probes are loaded
+    if (probes.length === 0) return; 
 
     const updateLatency = () => {
       const newArcs: ArcData[] = [];
       for (const region of visibleRegions) {
         for (const exchange of visibleExchanges) {
           if (region.id === exchange.id) continue;
-
-          // Get latency from nearest probes for each
+          
           const regionLatency = getLatencyFromProbes(region, probes);
           const exchangeLatency = getLatencyFromProbes(exchange, probes);
-
-          // Simple average of the two locations' general latencies
+          
           const avgLatency = (regionLatency + exchangeLatency) / 2;
           const color = getLatencyColor(avgLatency);
 
@@ -163,10 +173,9 @@ export default function Home() {
     };
 
     updateLatency();
-    // We can update this less frequently now
     const interval = setInterval(updateLatency, 60000); 
     return () => clearInterval(interval);
-  }, [visibleRegions, visibleExchanges, probes]); // Re-run if probes change
+  }, [visibleRegions, visibleExchanges, probes]);
 
   // Update Visible Points
   useEffect(() => {
@@ -174,8 +183,7 @@ export default function Home() {
     setPoints([...regionPoints, ...visibleExchanges]);
   }, [visibleRegions, visibleExchanges, showRegionBoundaries]);
 
-  // MODIFIED: Historical Data Generation
-  // Back to MOCK data for this, as the Globalping API is real-time only.
+  // Historical Data Generation (Mock)
   useEffect(() => {
     if (selectedPair.from && selectedPair.to) {
       const data = getMockHistoricalData(selectedPair.from, selectedPair.to, timeRange);
@@ -195,6 +203,7 @@ export default function Home() {
           pointsData={points}
           latencyArcs={latencyArcs}
           polygonsData={visiblePolygons}
+          heatmapData={visibleHeatmapData}
         />
       </div>
 
@@ -209,6 +218,8 @@ export default function Home() {
         setSearchTerm={setSearchTerm}
         showRegionBoundaries={showRegionBoundaries}
         setShowRegionBoundaries={setShowRegionBoundaries}
+        showHeatmap={showHeatmap}
+        setShowHeatmap={setShowHeatmap}
       />
 
       <HistoricalChart

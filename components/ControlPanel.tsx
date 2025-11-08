@@ -14,8 +14,10 @@ interface ControlProps {
   setSelectedPair: (pair: { from: string | null; to: string | null }) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  showRegionBoundaries: boolean; // <-- New Prop
-  setShowRegionBoundaries: (show: boolean) => void; // <-- New Prop
+  showRegionBoundaries: boolean;
+  setShowRegionBoundaries: (show: boolean) => void;
+  showHeatmap: boolean; // <-- NEW PROP
+  setShowHeatmap: (show: boolean) => void; // <-- NEW PROP
 }
 
 const providerIcons: Record<Provider, React.ReactElement> = {
@@ -34,8 +36,10 @@ const ControlPanel: React.FC<ControlProps> = ({
   setSelectedPair,
   searchTerm,
   setSearchTerm,
-  showRegionBoundaries, // <-- Destructure new prop
-  setShowRegionBoundaries, // <-- Destructure new prop
+  showRegionBoundaries,
+  setShowRegionBoundaries,
+  showHeatmap, // <-- DESTRUCTURE NEW PROP
+  setShowHeatmap, // <-- DESTRUCTURE NEW PROP
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -80,7 +84,6 @@ const ControlPanel: React.FC<ControlProps> = ({
           ))}
         </div>
 
-        {/* --- NEW SECTION --- */}
         <div className="toggle-group">
           <label htmlFor="region-toggle">Show Region Boundaries</label>
           <label className="toggle-switch">
@@ -89,6 +92,20 @@ const ControlPanel: React.FC<ControlProps> = ({
               type="checkbox"
               checked={showRegionBoundaries}
               onChange={(e) => setShowRegionBoundaries(e.target.checked)}
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        {/* --- NEW HEATMAP TOGGLE --- */}
+        <div className="toggle-group">
+          <label htmlFor="heatmap-toggle">Show Latency Heatmap</label>
+          <label className="toggle-switch">
+            <input
+              id="heatmap-toggle"
+              type="checkbox"
+              checked={showHeatmap}
+              onChange={(e) => setShowHeatmap(e.target.checked)}
             />
             <span className="toggle-slider"></span>
           </label>
