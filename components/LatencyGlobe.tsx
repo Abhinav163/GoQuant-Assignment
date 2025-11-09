@@ -94,7 +94,9 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
       ringMaxRadius={() => Math.random() * 10 + 3} // Simulate volume size
       ringPropagationSpeed={() => Math.random() * 1 + 1} // Simulate speed
       ringRepeatPeriod={() => Math.random() * 1500 + 800} // Simulate frequency
-      ringColor={(point: LocationPoint) => (t: number) => getProviderColor(point.provider, 0.6)}
+      // --- THIS IS THE FIX ---
+      // We remove the (t: number) => ... wrapper. The prop just wants the color for the ring.
+      ringColor={(point) => getProviderColor((point as LocationPoint).provider, 0.6)}
       ringAltitude={0.01} // Slightly above surface
     />
   );
