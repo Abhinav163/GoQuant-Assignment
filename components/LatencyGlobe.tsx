@@ -84,7 +84,7 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
       heatmapsData={[heatmapData]}
       heatmapPointLat="lat"
       heatmapPointLng="lng"
-      heatmapPointVal="val"
+      heatmapPointWeight="val"
       heatmapRadius={20}
 
       // --- ADD RINGS (VOLUME) ---
