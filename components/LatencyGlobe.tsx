@@ -11,7 +11,7 @@ interface GlobeProps {
   latencyArcs: ArcData[];
   polygonsData: PolygonFeature[];
   heatmapData: { lat: number, lng: number, val: number }[];
-  ringsData: LocationPoint[]; // <-- ADD THIS PROP
+  ringsData: LocationPoint[];
 }
 
 // Helper function for colors, now with opacity
@@ -30,7 +30,7 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
   latencyArcs, 
   polygonsData, 
   heatmapData,
-  ringsData // <-- DESTRUCTURE THIS PROP
+  ringsData 
 }) => {
   const { theme } = useTheme();
 
@@ -84,8 +84,10 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
       heatmapsData={[heatmapData]}
       heatmapPointLat="lat"
       heatmapPointLng="lng"
-      heatmapPointWeight="val"
-      heatmapPointRadius={20}
+      // --- FIX 1 ---
+      heatmapPointWeight="val" // Correct prop for the value
+      // --- FIX 2 ---
+      heatmapRadius={20} // Correct prop for the radius
 
       // --- ADD RINGS (VOLUME) ---
       ringsData={ringsData}
@@ -94,8 +96,6 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
       ringMaxRadius={() => Math.random() * 10 + 3} // Simulate volume size
       ringPropagationSpeed={() => Math.random() * 1 + 1} // Simulate speed
       ringRepeatPeriod={() => Math.random() * 1500 + 800} // Simulate frequency
-      // --- THIS IS THE FIX ---
-      // We remove the (t: number) => ... wrapper. The prop just wants the color for the ring.
       ringColor={(point) => getProviderColor((point as LocationPoint).provider, 0.6)}
       ringAltitude={0.01} // Slightly above surface
     />
