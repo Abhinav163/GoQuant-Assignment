@@ -13,7 +13,7 @@ The dashboard provides a high-level overview of network performance, helping to 
 - **Dynamic Filtering & Search**: A comprehensive control panel allows users to:
   - Filter by cloud provider (AWS, GCP, Azure, Colo).
   - Search for specific regions or exchanges.
-  - Toggle the visibility of cloud region boundaries and the latency heatmap.
+  - Toggle the visibility of all visualization layers.
 - **Legend & Tooltips**: A clear legend and interactive hover tooltips provide context for data points on the globe.
 - **Performance Dashboard**: Displays real-time Frames Per Second (FPS) and the last data update time.
 - **Dark/Light Theme**: A theme toggle is included, using React Context and CSS variables for a seamless user experience.
@@ -22,6 +22,8 @@ The dashboard provides a high-level overview of network performance, helping to 
 ### Bonus Features Implemented
 
 - **Latency Heatmap**: An overlay on the globe visualizes global latency hotspots based on live probe data.
+- **Network Topology Visualization**: A toggleable layer to show the interconnectivity (mesh) between all visible crypto exchanges.
+- **Animated Data Flow Visualization**: A toggleable layer that simulates trading volume with animated rings pulsing from exchange locations.
 - **Dark/Light Theme Toggle**: Fully implemented.
 - **Export Functionality**: Implemented for historical data.
 
@@ -39,6 +41,7 @@ The dashboard provides a high-level overview of network performance, helping to 
 
 - **Real-time Latency**: Data is fetched from the **Globalping API** (`https://api.globalping.io/v1/probes`). The application calculates an average latency for each location based on the nearest available probes.
 - **Historical Latency**: This data is **simulated** for demonstration purposes. The `utils/latency-simulator.ts` file generates realistic, time-series data with jitter for any selected region-exchange pair.
+- **Network Topology & Volume**: This data is **simulated** for demonstration purposes. The topology view draws a mesh between all filtered exchanges, and the volume view generates animated rings at exchange locations.
 - **Static Data**:
   - **Exchange Locations**: Defined in `data/exchange-locations.ts`.
 - **Cloud Regions**: Defined in `data/cloud-regions.ts`.
