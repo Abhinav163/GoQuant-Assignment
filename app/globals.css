@@ -116,7 +116,7 @@ main {
 .panel-content {
   padding: 16px;
   overflow-y: auto;
-  max-height: 400px;
+  max-height: 650px;
 }
 .panel-content.collapsed {
   display: none;
@@ -130,9 +130,10 @@ hr {
 
 /* --- Control Panel --- */
 .control-panel {
-  top: 20px;
+  top: 110px;
   left: 20px;
   width: 320px;
+  height: 680px;
 }
 
 .search-box {
@@ -195,9 +196,9 @@ hr {
 /* --- Historical Chart Panel --- */
 .chart-container {
   bottom: 20px;
-  left: 20px;
-  width: 450px;
-  height: 300px;
+  right: 20px;
+  width: 550px;
+  height: 330px;
 }
 .chart-container .panel-content {
   height: calc(100% - 45px); /* Full height minus header */
@@ -433,7 +434,7 @@ input:checked + .toggle-slider:before {
     right: 20px;
   }
   .legend-panel {
-    top: 20px; /* Legend at top right */
+    top: 200px; /* Legend at top right */
     right: 20px;
     bottom: auto; /* Override default bottom */
   }

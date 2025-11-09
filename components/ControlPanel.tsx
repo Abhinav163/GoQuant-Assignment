@@ -16,8 +16,13 @@ interface ControlProps {
   setSearchTerm: (term: string) => void;
   showRegionBoundaries: boolean;
   setShowRegionBoundaries: (show: boolean) => void;
-  showHeatmap: boolean; // <-- NEW PROP
-  setShowHeatmap: (show: boolean) => void; // <-- NEW PROP
+  showHeatmap: boolean;
+  setShowHeatmap: (show: boolean) => void;
+  // --- ADD THESE NEW PROPS ---
+  showTopology: boolean;
+  setShowTopology: (show: boolean) => void;
+  showVolume: boolean;
+  setShowVolume: (show: boolean) => void;
 }
 
 const providerIcons: Record<Provider, React.ReactElement> = {
@@ -38,8 +43,13 @@ const ControlPanel: React.FC<ControlProps> = ({
   setSearchTerm,
   showRegionBoundaries,
   setShowRegionBoundaries,
-  showHeatmap, // <-- DESTRUCTURE NEW PROP
-  setShowHeatmap, // <-- DESTRUCTURE NEW PROP
+  showHeatmap,
+  setShowHeatmap,
+  // --- DESTRUCTURE NEW PROPS ---
+  showTopology,
+  setShowTopology,
+  showVolume,
+  setShowVolume,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -97,7 +107,6 @@ const ControlPanel: React.FC<ControlProps> = ({
           </label>
         </div>
         
-        {/* --- NEW HEATMAP TOGGLE --- */}
         <div className="toggle-group">
           <label htmlFor="heatmap-toggle">Show Latency Heatmap</label>
           <label className="toggle-switch">
@@ -106,6 +115,33 @@ const ControlPanel: React.FC<ControlProps> = ({
               type="checkbox"
               checked={showHeatmap}
               onChange={(e) => setShowHeatmap(e.target.checked)}
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+
+        {/* --- ADD NEW TOGGLES HERE --- */}
+        <div className="toggle-group">
+          <label htmlFor="topology-toggle">Show Exchange Topology</label>
+          <label className="toggle-switch">
+            <input
+              id="topology-toggle"
+              type="checkbox"
+              checked={showTopology}
+              onChange={(e) => setShowTopology(e.target.checked)}
+            />
+            <span className="toggle-slider"></span>
+          </label>
+        </div>
+        
+        <div className="toggle-group">
+          <label htmlFor="volume-toggle">Show Trading Volume</label>
+          <label className="toggle-switch">
+            <input
+              id="volume-toggle"
+              type="checkbox"
+              checked={showVolume}
+              onChange={(e) => setShowVolume(e.target.checked)}
             />
             <span className="toggle-slider"></span>
           </label>

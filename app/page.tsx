@@ -89,6 +89,9 @@ export default function Home() {
   const [showRegionBoundaries, setShowRegionBoundaries] = useState(true);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [probes, setProbes] = useState<any[]>([]);
+  // --- ADD STATE FOR NEW TOGGLES ---
+  const [showTopology, setShowTopology] = useState(false);
+  const [showVolume, setShowVolume] = useState(false);
 
   // --- Memos for Filtering ---
   const visibleRegions = useMemo(() => {
@@ -127,8 +130,44 @@ export default function Home() {
         val: p.stats.rtt / 100, // <-- UPDATED: Normalize RTT (e.g., 100ms = 1.0 weight)
       }));
   }, [probes, showHeatmap]);
-  // ----------------------------
 
+  // --- ADD MEMO FOR TOPOLOGY ARCS ---
+  const topologyArcs = useMemo(() => {
+    if (!showTopology) return [];
+    
+    const arcs: ArcData[] = [];
+    const exchangeColor = 'rgba(136, 132, 216, 0.4)'; // A light purple/blue
+
+    // Create a mesh of connections between all visible exchanges
+    for (let i = 0; i < visibleExchanges.length; i++) {
+      for (let j = i + 1; j < visibleExchanges.length; j++) {
+        const ex1 = visibleExchanges[i];
+        const ex2 = visibleExchanges[j];
+        arcs.push({
+          startLat: ex1.lat,
+          startLng: ex1.lng,
+          endLat: ex2.lat,
+          endLng: ex2.lng,
+          color: exchangeColor,
+          label: `${ex1.name} <-> ${ex2.name} (Topology)`,
+        });
+      }
+    }
+    return arcs;
+  }, [showTopology, visibleExchanges]);
+
+  // --- ADD MEMO FOR COMBINED ARCS ---
+  const allVisibleArcs = useMemo(() => {
+    return [...latencyArcs, ...topologyArcs];
+  }, [latencyArcs, topologyArcs]);
+
+  // --- ADD MEMO FOR VOLUME RINGS ---
+  const visibleRings = useMemo(() => {
+    if (!showVolume) return [];
+    // We just pass the exchange data, the globe component will randomize the rings
+    return visibleExchanges; 
+  }, [showVolume, visibleExchanges]);
+  
   // --- useEffects ---
 
   // Fetch Globalping probes once on load
@@ -201,9 +240,10 @@ export default function Home() {
       <div style={{ position: 'absolute', zIndex: 0, width: '100%', height: '100%' }}>
         <LatencyGlobe
           pointsData={points}
-          latencyArcs={latencyArcs}
+          latencyArcs={allVisibleArcs} // <-- USE COMBINED ARCS
           polygonsData={visiblePolygons}
           heatmapData={visibleHeatmapData}
+          ringsData={visibleRings} // <-- PASS RINGS DATA
         />
       </div>
 
@@ -220,6 +260,11 @@ export default function Home() {
         setShowRegionBoundaries={setShowRegionBoundaries}
         showHeatmap={showHeatmap}
         setShowHeatmap={setShowHeatmap}
+        // --- PASS NEW PROPS ---
+        showTopology={showTopology}
+        setShowTopology={setShowTopology}
+        showVolume={showVolume}
+        setShowVolume={setShowVolume}
       />
 
       <HistoricalChart
