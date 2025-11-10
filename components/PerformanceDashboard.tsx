@@ -1,4 +1,3 @@
-// components/PerformanceDashboard.tsx
 'use client';
 import React from 'react';
 import { useFPS } from '@/hooks/useFPS';
@@ -12,9 +11,9 @@ const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({ lastUpdateT
   const fps = useFPS();
 
   const getFPSColor = () => {
-    if (fps >= 50) return '#00ff00'; // Green
-    if (fps >= 30) return '#ffff00'; // Yellow
-    return '#ff0000'; // Red
+    if (fps >= 50) return '#00ff00';
+    if (fps >= 30) return '#ffff00';
+    return '#ff0000'; 
   };
 
   return (

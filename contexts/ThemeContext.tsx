@@ -1,4 +1,4 @@
-// contexts/ThemeContext.tsx
+
 'use client';
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
@@ -16,7 +16,6 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    // We start with dark, but check if user has a system preference for light
     const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
     const initialTheme = prefersLight ? 'light' : 'dark';
     setTheme(initialTheme);

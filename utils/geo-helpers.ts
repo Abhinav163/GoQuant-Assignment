@@ -1,12 +1,3 @@
-// utils/geo-helpers.ts
-
-/**
- * Creates a GeoJSON-compatible polygon (a circle) around a center point.
- * @param center [lng, lat]
- * @param radiusInKm Radius of the circle in kilometers
- * @param points Number of points to create the circle (default 32)
- * @returns A GeoJSON Polygon coordinate structure [lng, lat][]
- */
 export const createGeoCircle = (
   center: [number, number],
   radiusInKm: number,
@@ -33,12 +24,11 @@ export const createGeoCircle = (
     );
 
     coords.push([
-      (newLngRad * 180) / Math.PI, // lng
-      (newLatRad * 180) / Math.PI  // lat
+      (newLngRad * 180) / Math.PI,
+      (newLatRad * 180) / Math.PI 
     ]);
   }
   
-  // Close the polygon
   coords.push(coords[0]);
   
   return coords;

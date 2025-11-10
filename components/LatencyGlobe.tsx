@@ -1,4 +1,3 @@
-// components/LatencyGlobe.tsx
 'use client'; 
 
 import React from 'react';
@@ -11,16 +10,15 @@ interface GlobeProps {
   latencyArcs: ArcData[];
   polygonsData: PolygonFeature[];
   heatmapData: { lat: number, lng: number, val: number }[];
-  ringsData: LocationPoint[]; // <-- ADD THIS PROP
+  ringsData: LocationPoint[];
 }
 
-// Helper function for colors, now with opacity
 const getProviderColor = (provider: Provider, opacity: number = 1): string => {
   switch (provider) {
-    case 'aws': return `rgba(255, 153, 0, ${opacity})`; // #FF9900
-    case 'gcp': return `rgba(66, 133, 244, ${opacity})`; // #4285F4
-    case 'azure': return `rgba(0, 120, 212, ${opacity})`; // #0078D4
-    case 'colo': return `rgba(255, 0, 255, ${opacity})`; // #FF00FF
+    case 'aws': return `rgba(255, 153, 0, ${opacity})`; 
+    case 'gcp': return `rgba(66, 133, 244, ${opacity})`;
+    case 'azure': return `rgba(0, 120, 212, ${opacity})`;
+    case 'colo': return `rgba(255, 0, 255, ${opacity})`; 
     default: return `rgba(255, 255, 255, ${opacity})`;
   }
 };
@@ -30,7 +28,7 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
   latencyArcs, 
   polygonsData, 
   heatmapData,
-  ringsData // <-- DESTRUCTURE THIS PROP
+  ringsData
 }) => {
   const { theme } = useTheme();
 
@@ -43,7 +41,6 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
       globeImageUrl={globeImageUrl}
       backgroundColor="rgba(0,0,0,0)"
       
-      // --- Points ---
       pointsData={pointsData}
       pointLat="lat"
       pointLng="lng"
@@ -56,7 +53,6 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
         </div>
       `}
       
-      // --- Arcs ---
       arcsData={latencyArcs}
       arcStartLat="startLat"
       arcStartLng="startLng"
@@ -68,34 +64,30 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
       arcDashGap={1}
       arcDashAnimateTime={3000}
 
-      // --- Polygons ---
       polygonsData={polygonsData}
       polygonGeoJsonGeometry="geometry"
       polygonCapColor={(feat) => getProviderColor((feat as PolygonFeature).properties.provider, 0.2)}
-      polygonSideColor={() => 'rgba(0, 0, 0, 0)'} // No sides
+      polygonSideColor={() => 'rgba(0, 0, 0, 0)'} 
       polygonStrokeColor={(feat) => getProviderColor((feat as PolygonFeature).properties.provider, 0.7)}
       polygonLabel={({ properties }: any) => `
         <div class="globe-label">
           <b>${properties.name}</b>
         </div>
       `}
-      
-      // --- Heatmap ---
+
       heatmapsData={[heatmapData]}
       heatmapPointLat="lat"
       heatmapPointLng="lng"
       heatmapPointVal="val"
       heatmapRadius={20}
-
-      // --- ADD RINGS (VOLUME) ---
       ringsData={ringsData}
       ringLat="lat"
       ringLng="lng"
-      ringMaxRadius={() => Math.random() * 10 + 3} // Simulate volume size
-      ringPropagationSpeed={() => Math.random() * 1 + 1} // Simulate speed
-      ringRepeatPeriod={() => Math.random() * 1500 + 800} // Simulate frequency
+      ringMaxRadius={() => Math.random() * 10 + 3}
+      ringPropagationSpeed={() => Math.random() * 1 + 1}
+      ringRepeatPeriod={() => Math.random() * 1500 + 800} 
       ringColor={(point: LocationPoint) => (t: number) => getProviderColor(point.provider, 0.6)}
-      ringAltitude={0.01} // Slightly above surface
+      ringAltitude={0.01} 
     />
   );
 };

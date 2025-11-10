@@ -1,4 +1,3 @@
-// components/ControlPanel.tsx
 'use client';
 import React, { useState } from 'react';
 import { FaAws, FaGoogle, FaMicrosoft, FaServer, FaSearch, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -18,7 +17,6 @@ interface ControlProps {
   setShowRegionBoundaries: (show: boolean) => void;
   showHeatmap: boolean;
   setShowHeatmap: (show: boolean) => void;
-  // --- ADD THESE NEW PROPS ---
   showTopology: boolean;
   setShowTopology: (show: boolean) => void;
   showVolume: boolean;
@@ -45,7 +43,6 @@ const ControlPanel: React.FC<ControlProps> = ({
   setShowRegionBoundaries,
   showHeatmap,
   setShowHeatmap,
-  // --- DESTRUCTURE NEW PROPS ---
   showTopology,
   setShowTopology,
   showVolume,
@@ -119,8 +116,6 @@ const ControlPanel: React.FC<ControlProps> = ({
             <span className="toggle-slider"></span>
           </label>
         </div>
-
-        {/* --- ADD NEW TOGGLES HERE --- */}
         <div className="toggle-group">
           <label htmlFor="topology-toggle">Show Exchange Topology</label>
           <label className="toggle-switch">
@@ -146,7 +141,6 @@ const ControlPanel: React.FC<ControlProps> = ({
             <span className="toggle-slider"></span>
           </label>
         </div>
-        {/* ----------------- */}
 
         <hr />
 

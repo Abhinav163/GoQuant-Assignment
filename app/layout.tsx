@@ -1,7 +1,6 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/contexts/ThemeContext"; // Import the provider
+import { ThemeProvider } from "@/contexts/ThemeContext"; 
 
 export const metadata: Metadata = {
   title: "Crypto Latency Map",

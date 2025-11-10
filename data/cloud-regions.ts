@@ -1,4 +1,3 @@
-// data/cloud-regions.ts
 import { LocationPoint } from "@/types";
 
 export const cloudRegions: LocationPoint[] = [
@@ -8,7 +7,6 @@ export const cloudRegions: LocationPoint[] = [
     provider: 'aws',
     lat: 38.9072,
     lng: -77.0369,
-    // countryCode: 'US', // <-- Add this
   },
   {
     id: 'aws-eu-west-2',
@@ -16,7 +14,6 @@ export const cloudRegions: LocationPoint[] = [
     provider: 'aws',
     lat: 51.5074,
     lng: -0.1278,
-    // countryCode: 'GB', // <-- Add this
   },
   {
     id: 'aws-ap-northeast-1',
@@ -24,7 +21,6 @@ export const cloudRegions: LocationPoint[] = [
     provider: 'aws',
     lat: 35.6895,
     lng: 139.6917,
-    // countryCode: 'JP', // <-- Add this
   },
   {
     id: 'gcp-us-central1',
@@ -32,7 +28,6 @@ export const cloudRegions: LocationPoint[] = [
     provider: 'gcp',
     lat: 41.8863,
     lng: -93.6231,
-    // countryCode: 'US', // <-- Add this
   },
   {
     id: 'gcp-europe-west1',
@@ -40,7 +35,6 @@ export const cloudRegions: LocationPoint[] = [
     provider: 'gcp',
     lat: 50.8503,
     lng: 4.3517,
-    // countryCode: 'BE', // <-- Add this
   },
   {
     id: 'azure-westus2',
@@ -48,7 +42,6 @@ export const cloudRegions: LocationPoint[] = [
     provider: 'azure',
     lat: 47.7511,
     lng: -120.7401,
-    // countryCode: 'US', // <-- Add this
   },
   {
     id: 'azure-eastasia',
@@ -56,6 +49,5 @@ export const cloudRegions: LocationPoint[] = [
     provider: 'azure',
     lat: 22.3193,
     lng: 114.1694,
-    // countryCode: 'HK', // <-- Add this
   },
 ];

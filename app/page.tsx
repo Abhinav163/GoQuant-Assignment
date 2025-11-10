@@ -1,21 +1,17 @@
-// app/page.tsx
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 
-// Import Data & Types
 import { exchanges as allExchanges } from '@/data/exchange-locations';
 import { cloudRegions as allCloudRegions } from '@/data/cloud-regions';
 import { regionPolygons as allRegionPolygons } from '@/data/region-polygons'; 
 import { LocationPoint, ArcData, Provider, HistoricalDataPoint, TimeRange, LatencyStats, PolygonFeature } from '@/types';
 
-// Import UI Components
 import ControlPanel from '@/components/ControlPanel';
 import HistoricalChart from '@/components/HistoricalChart';
 import PerformanceDashboard from '@/components/PerformanceDashboard';
 import Legend from '@/components/Legend';
 
-// We will use the mock historical data again
 import { getMockHistoricalData, calculateStats } from '@/utils/latency-simulator';
 
 
@@ -24,16 +20,12 @@ const LatencyGlobe = dynamic(() => import('@/components/LatencyGlobe'), {
   loading: () => <p style={{ textAlign: 'center', marginTop: '20%' }}>Loading 3D Globe...</p>,
 });
 
-// Helper function to get latency color
 const getLatencyColor = (latency: number): string => {
   if (latency < 50) return 'rgba(0, 255, 0, 0.7)'; // Green
   else if (latency < 150) return 'rgba(255, 255, 0, 0.7)'; // Yellow
   else return 'rgba(255, 0, 0, 0.7)'; // Red
 };
 
-// --- HELPER FUNCTIONS ---
-
-// Calculates distance between two lat/lng points in KM
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // Radius of the earth in km
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -46,7 +38,6 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   return R * c;
 }
 
-// Finds the average latency of the nearest probes to a location
 function getLatencyFromProbes(location: LocationPoint, probes: any[], probeCount = 3) {
   const sortedProbes = probes
     .filter(p => p.status === 'ready' && p.stats.rtt > 0)
@@ -59,7 +50,7 @@ function getLatencyFromProbes(location: LocationPoint, probes: any[], probeCount
   const nearestProbes = sortedProbes.slice(0, probeCount);
   
   if (nearestProbes.length === 0) {
-    return 100; // Fallback latency
+    return 100;
   }
 
   const avgLatency = nearestProbes.reduce((acc, p) => acc + p.stats.rtt, 0) / nearestProbes.length;
@@ -68,7 +59,6 @@ function getLatencyFromProbes(location: LocationPoint, probes: any[], probeCount
 
 
 export default function Home() {
-  // --- State ---
   const [latencyArcs, setLatencyArcs] = useState<ArcData[]>([]);
   const [points, setPoints] = useState<LocationPoint[]>([]);
   const [historicalData, setHistoricalData] = useState<HistoricalDataPoint[]>([]);
@@ -85,15 +75,12 @@ export default function Home() {
     from: null, to: null,
   });
 
-  // --- New State ---
   const [showRegionBoundaries, setShowRegionBoundaries] = useState(true);
   const [showHeatmap, setShowHeatmap] = useState(true);
   const [probes, setProbes] = useState<any[]>([]);
-  // --- ADD STATE FOR NEW TOGGLES ---
   const [showTopology, setShowTopology] = useState(false);
   const [showVolume, setShowVolume] = useState(false);
 
-  // --- Memos for Filtering ---
   const visibleRegions = useMemo(() => {
     return allCloudRegions.filter(r => 
       filters[r.provider] && r.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -116,29 +103,25 @@ export default function Home() {
     );
   }, [filters, searchTerm, showRegionBoundaries]);
 
-  // --- HEATMAP MEMO ---
   const visibleHeatmapData = useMemo(() => {
     if (!showHeatmap || probes.length === 0) {
       return [];
     }
-    // Create heatmap points from all available probes
     return probes
       .filter(p => p.status === 'ready' && p.stats.rtt > 0)
       .map(p => ({
         lat: p.location.latitude,
         lng: p.location.longitude,
-        val: p.stats.rtt / 100, // <-- UPDATED: Normalize RTT (e.g., 100ms = 1.0 weight)
+        val: p.stats.rtt / 100,
       }));
   }, [probes, showHeatmap]);
 
-  // --- ADD MEMO FOR TOPOLOGY ARCS ---
   const topologyArcs = useMemo(() => {
     if (!showTopology) return [];
     
     const arcs: ArcData[] = [];
-    const exchangeColor = 'rgba(136, 132, 216, 0.4)'; // A light purple/blue
+    const exchangeColor = 'rgba(136, 132, 216, 0.4)';
 
-    // Create a mesh of connections between all visible exchanges
     for (let i = 0; i < visibleExchanges.length; i++) {
       for (let j = i + 1; j < visibleExchanges.length; j++) {
         const ex1 = visibleExchanges[i];
@@ -156,21 +139,15 @@ export default function Home() {
     return arcs;
   }, [showTopology, visibleExchanges]);
 
-  // --- ADD MEMO FOR COMBINED ARCS ---
   const allVisibleArcs = useMemo(() => {
     return [...latencyArcs, ...topologyArcs];
   }, [latencyArcs, topologyArcs]);
 
-  // --- ADD MEMO FOR VOLUME RINGS ---
   const visibleRings = useMemo(() => {
     if (!showVolume) return [];
-    // We just pass the exchange data, the globe component will randomize the rings
     return visibleExchanges; 
   }, [showVolume, visibleExchanges]);
   
-  // --- useEffects ---
-
-  // Fetch Globalping probes once on load
   useEffect(() => {
     fetch('https://api.globalping.io/v1/probes')
       .then(res => res.json())
@@ -181,7 +158,6 @@ export default function Home() {
       .catch(err => console.error("Failed to fetch Globalping probes:", err));
   }, []);
   
-  // Real-time Latency Simulation
   useEffect(() => {
     if (probes.length === 0) return; 
 
@@ -216,13 +192,11 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [visibleRegions, visibleExchanges, probes]);
 
-  // Update Visible Points
   useEffect(() => {
     const regionPoints = showRegionBoundaries ? [] : visibleRegions;
     setPoints([...regionPoints, ...visibleExchanges]);
   }, [visibleRegions, visibleExchanges, showRegionBoundaries]);
 
-  // Historical Data Generation (Mock)
   useEffect(() => {
     if (selectedPair.from && selectedPair.to) {
       const data = getMockHistoricalData(selectedPair.from, selectedPair.to, timeRange);
@@ -240,10 +214,10 @@ export default function Home() {
       <div style={{ position: 'absolute', zIndex: 0, width: '100%', height: '100%' }}>
         <LatencyGlobe
           pointsData={points}
-          latencyArcs={allVisibleArcs} // <-- USE COMBINED ARCS
+          latencyArcs={allVisibleArcs}
           polygonsData={visiblePolygons}
           heatmapData={visibleHeatmapData}
-          ringsData={visibleRings} // <-- PASS RINGS DATA
+          ringsData={visibleRings} 
         />
       </div>
 
@@ -260,7 +234,6 @@ export default function Home() {
         setShowRegionBoundaries={setShowRegionBoundaries}
         showHeatmap={showHeatmap}
         setShowHeatmap={setShowHeatmap}
-        // --- PASS NEW PROPS ---
         showTopology={showTopology}
         setShowTopology={setShowTopology}
         showVolume={showVolume}

@@ -1,4 +1,3 @@
-// hooks/useFPS.ts
 'use client';
 import { useState, useEffect, useRef } from 'react';
 
@@ -12,8 +11,6 @@ export const useFPS = () => {
       const delta = time - lastTimeRef.current;
       lastTimeRef.current = time;
       const currentFps = 1000 / delta;
-      
-      // Use a simple moving average to smooth the FPS value
       setFps((prevFps) => (prevFps * 0.9 + currentFps * 0.1));
 
       frameRef.current = requestAnimationFrame(loop);

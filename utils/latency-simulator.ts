@@ -1,4 +1,3 @@
-// utils/latency-simulator.ts
 import { HistoricalDataPoint, LatencyStats, TimeRange } from "@/types";
 
 const baseLatencyMap = new Map<string, number>();
@@ -18,9 +17,9 @@ export const getMockLatency = (fromId: string, toId: string) => {
   const latency = Math.max(5, baseLatency + jitter);
 
   let color: string;
-  if (latency < 50) color = 'rgba(0, 255, 0, 0.7)'; // Green
-  else if (latency < 150) color = 'rgba(255, 255, 0, 0.7)'; // Yellow
-  else color = 'rgba(255, 0, 0, 0.7)'; // Red
+  if (latency < 50) color = 'rgba(0, 255, 0, 0.7)'; 
+  else if (latency < 150) color = 'rgba(255, 255, 0, 0.7)'; 
+  else color = 'rgba(255, 0, 0, 0.7)';
 
   return { latency: parseFloat(latency.toFixed(1)), color };
 };
@@ -39,20 +38,20 @@ export const getMockHistoricalData = (
   switch (range) {
     case '1h':
       totalMinutes = 60;
-      stepMinutes = 1; // 60 points
+      stepMinutes = 1;
       break;
     case '7d':
       totalMinutes = 7 * 24 * 60;
-      stepMinutes = 60; // 168 points
+      stepMinutes = 60;
       break;
-    case '30d': // <-- NEW CASE
+    case '30d': 
       totalMinutes = 30 * 24 * 60;
-      stepMinutes = 240; // 4-hour intervals, 180 points
+      stepMinutes = 240;
       break;
     case '24h':
     default:
       totalMinutes = 24 * 60;
-      stepMinutes = 15; // 96 points
+      stepMinutes = 15; 
       break;
   }
 

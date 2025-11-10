@@ -1,4 +1,3 @@
-// components/Legend.tsx
 'use client';
 import React from 'react';
 import { FaAws, FaGoogle, FaMicrosoft, FaServer } from 'react-icons/fa';

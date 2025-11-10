@@ -1,4 +1,3 @@
-// components/HistoricalChart.tsx
 'use client';
 import React, { useState } from 'react';
 import {
@@ -101,9 +100,6 @@ const HistoricalChart: React.FC<ChartProps> = ({
                 <FaFileCsv />
               </button>
             </div>
-
-            {/* --- THIS IS THE FIX --- */}
-            {/* The container is 300px, header is 45px, controls are ~40px. Let's give it a fixed height. */}
             <ResponsiveContainer width="100%" height={200}>
               <LineChart
                 data={data}

@@ -1,5 +1,3 @@
-// types/index.ts
-
 export type Provider = 'aws' | 'gcp' | 'azure' | 'colo';
 
 export interface LocationPoint {
@@ -9,7 +7,6 @@ export interface LocationPoint {
   location?: string;
   lat: number;
   lng: number;
-  // countryCode?: string;
 }
 
 export interface ArcData {
@@ -38,7 +35,7 @@ export interface PolygonFeature {
   type: 'Feature';
   geometry: {
     type: 'Polygon';
-    coordinates: [number, number][][]; // GeoJSON format for Polygon
+    coordinates: [number, number][][]; 
   };
   properties: {
     id: string;
