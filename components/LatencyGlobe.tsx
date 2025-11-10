@@ -28,7 +28,7 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
   latencyArcs, 
   polygonsData, 
   heatmapData,
-  ringsData
+  ringsData 
 }) => {
   const { theme } = useTheme();
 
@@ -80,14 +80,15 @@ const LatencyGlobe: React.FC<GlobeProps> = ({
       heatmapPointLng="lng"
       heatmapPointVal="val"
       heatmapRadius={20}
+
       ringsData={ringsData}
       ringLat="lat"
       ringLng="lng"
-      ringMaxRadius={() => Math.random() * 10 + 3}
-      ringPropagationSpeed={() => Math.random() * 1 + 1}
+      ringMaxRadius={() => Math.random() * 10 + 3} 
+      ringPropagationSpeed={() => Math.random() * 1 + 1} 
       ringRepeatPeriod={() => Math.random() * 1500 + 800} 
       ringColor={(point: LocationPoint) => (t: number) => getProviderColor(point.provider, 0.6)}
-      ringAltitude={0.01} 
+      ringAltitude={0.01}
     />
   );
 };
